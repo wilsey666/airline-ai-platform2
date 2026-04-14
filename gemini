@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI航空服务优化与客户体验管理平台 - 战略开发部</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+        }
+        .navbar {
+            background-color: #1a2a3a;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            font-weight: 700;
+            color: #1a2a3a;
+        }
+        .btn-primary {
+            background-color: #0066cc;
+            border: none;
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background-color: #004d99;
+        }
+        #output-area {
+            display: none; /* 初始隐藏 */
+        }
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        .script-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0066cc;
+            padding: 15px;
+            font-style: italic;
+            color: #555;
+        }
+        .progress {
+            height: 25px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark mb-4">
+    <div class="container">
+        <span class="navbar-brand mb-0 h1">
+            <i class="bi bi-cpu"></i> AI航空服务优化与客户体验管理平台 
+            <small class="ms-2 fw-light text-secondary" style="font-size: 0.8rem;">战略开发部 V1.0</small>
+        </span>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header">服务决策输入</div>
+                <div class="card-body">
+                    <form id="decisionForm">
+                        <div class="mb-3">
+                            <label class="form-label">延误时间 (小时)</label>
+                            <input type="number" id="delayTime" class="form-control" placeholder="输入小时数，如: 3.5" step="0.1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">乘客类型</label>
+                            <select id="passengerType" class="form-select">
+                                <option value="普通">普通旅客</option>
+                                <option value="商务">商务/高端旅客</option>
+                                <option value="旅行">团队/旅行旅客</option>
+                                <option value="不详">不详</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">当前舱位</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="cabin" id="economy" value="经济舱" checked>
+                                <label class="btn btn-outline-secondary" for="economy">经济舱</label>
+                                <input type="radio" class="btn-check" name="cabin" id="business" value="商务舱">
+                                <label class="btn btn-outline-secondary" for="business">商务舱</label>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <label class="form-label">员工服务自评 (1-5分)</label>
+                            <input type="range" id="staffScore" class="form-range" min="1" max="5" step="1" value="3">
+                            <div class="d-flex justify-content-between text-muted" style="font-size: 0.8rem;">
+                                <span>非常生硬</span>
+                                <span>标准</span>
+                                <span>极尽全力</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="generateDecision()" class="btn btn-primary w-100">生成AI智能决策</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7" id="output-area">
+            <div class="card border-primary">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    AI推荐服务方案
+                    <span id="badgeCabin" class="badge bg-primary"></span>
+                </div>
+                <div class="card-body">
+                    <h4 id="solutionTitle" class="text-primary mb-3"></h4>
+                    <p class="fw-bold mb-2 text-secondary">服务话术指导：</p>
+                    <div class="script-box mb-3" id="speechScript"></div>
+                    
+                    <hr>
+                    
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <div class="display-5 fw-bold" id="satScore">0</div>
+                            <div class="text-muted">满意度预测得分</div>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">预测等级：<span id="satLevel" class="fw-bold"></span></label>
+                            <div class="progress mb-2">
+                                <div id="satBar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="card-title text-muted font-monospace"><i class="bi bi-info-circle"></i> AI 决策解释 (Explainable AI)</h6>
+                    <p class="card-text" id="aiExplanation"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="text-center mt-5 text-muted pb-4">
+    <small>© 2026 韩国航空战略开发部 - 人是目的，而非手段</small>
+</footer>
+
+<script>
+function generateDecision() {
+    // 1. 获取输入
+    const delay = parseFloat(document.getElementById('delayTime').value);
+    const pType = document.getElementById('passengerType').value;
+    const cabin = document.querySelector('input[name="cabin"]:checked').value;
+    const staffScore = parseInt(document.getElementById('staffScore').value);
+
+    if (isNaN(delay)) {
+        alert("请输入有效的延误时间");
+        return;
+    }
+
+    // 2. 决策逻辑 (Service Recovery)
+    let solution = "";
+    let speech = "";
+    let bonusScore = 0;
+
+    if (delay < 1) {
+        solution = "保持观察，提供实时信息更新";
+        speech = "“尊敬的旅客，很抱歉航班稍有变动。目前预计延误在1小时内，我们会为您实时监控后续状态，请您在休息区稍坐。”";
+    } else if (delay >= 1 && delay <= 3) {
+        solution = "发放餐券 / 电子消费券";
+        speech = "“为了表达我们的歉意，我们为您准备了机场餐券。您可以前往指定餐厅用餐，感谢您的耐心等待。”";
+        bonusScore += 5;
+    } else if (delay > 3 && delay <= 5) {
+        if (pType === "商务" || cabin === "商务舱") {
+            solution = "优先改签 + 贵宾休息室(VIP)服务";
+            speech = "“尊贵的旅客，由于延误已超过3小时，我们已为您开通优先改签通道，并邀请您前往贵宾休息室稍作休憩，我们将专人跟进您的行程。”";
+            bonusScore += 20;
+        } else {
+            solution = "协助办理改签服务";
+            speech = "“旅客您好，延误时间较长，我们正全力为您协调更早的航班。请您前往柜台，我们将协助您办理免费改签。”";
+        }
+    } else { // delay > 5
+        if (pType === "商务" || cabin === "商务舱") {
+            solution = "高档酒店安置 + VIP服务专车";
+            speech = "“深表歉意，本次航班延误已超过5小时。我们已为您安排了机组同级别的酒店住宿及专车接送，请您安心休息，后续安排我们将第一时间联系您。”";
+            bonusScore += 35; // 酒店15 + VIP 20
+        } else {
+            solution = "标准酒店住宿安排";
+            speech = "“由于航班延误较长，我们为您提供了酒店休息。请您跟随工作人员前往班车处，食宿费用由航司承担。”";
+            bonusScore += 15;
+        }
+    }
+
+    // 3. 满意度计算逻辑
+    // 初始分 = 100, 每小时延误 -10, 服务补偿 bonusScore, 员工自评
+    let staffImpact = 0;
+    switch(staffScore) {
+        case 1: staffImpact = -20; break;
+        case 2: staffImpact = -10; break;
+        case 3: staffImpact = 0; break;
+        case 4: staffImpact = 10; break;
+        case 5: staffImpact = 20; break;
+    }
+
+    let finalScore = 100 - (delay * 10) + bonusScore + staffImpact;
+    finalScore = Math.max(0, Math.min(100, finalScore)); // 限制0-100
+
+    // 4. UI渲染
+    document.getElementById('output-area').style.display = 'block';
+    document.getElementById('solutionTitle').innerText = solution;
+    document.getElementById('speechScript').innerText = speech;
+    document.getElementById('badgeCabin').innerText = cabin;
+    
+    const satScoreEl = document.getElementById('satScore');
+    satScoreEl.innerText = Math.round(finalScore);
+    
+    const bar = document.getElementById('satBar');
+    const levelEl = document.getElementById('satLevel');
+    bar.style.width = finalScore + "%";
+    
+    if (finalScore >= 80) {
+        bar.className = "progress-bar bg-success";
+        levelEl.innerText = "高 (高忠诚度)";
+        levelEl.className = "text-success";
+    } else if (finalScore >= 50) {
+        bar.className = "progress-bar bg-warning";
+        levelEl.innerText = "中 (存在流失风险)";
+        levelEl.className = "text-warning";
+    } else {
+        bar.className = "progress-bar bg-danger";
+        levelEl.innerText = "低 (负面口碑预警)";
+        levelEl.className = "text-danger";
+    }
+
+    // AI解释模块
+    document.getElementById('aiExplanation').innerText = `基于延误${delay}小时且针对${pType}旅客（${cabin}）的特征，系统触发了“${solution}”决策。计算显示，虽然延误造成了${delay * 10}分的负面感知，但通过${bonusScore > 0 ? '针对性补偿' : '话术安抚'}与员工${staffScore}分的执行表现，最终将满意度锚定在${Math.round(finalScore)}分。`;
+    
+    // 平滑滚动到结果
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
