@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI航空服务优化与客户体验管理平台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --fg: #1a2332;
+            --muted: #6b7a8d;
+            --accent: #c8956c;
+            --accent-light: #e8c9a8;
+            --accent-dark: #a07048;
+            --card: #ffffff;
+            --border: #e2e6ec;
+            --nav-from: #0c1929;
+            --nav-to: #1a2d47;
+            --success: #22c55e;
+            --success-bg: #f0fdf4;
+            --warning: #f59e0b;
+            --warning-bg: #fffbeb;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --shadow-sm: 0 1px 3px rgba(12,25,41,0.06);
+            --shadow-md: 0 4px 16px rgba(12,25,41,0.08);
+            --shadow-lg: 0 8px 32px rgba(12,25,41,0.12);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --font-cn: 'Noto Sans SC', sans-serif;
+            --font-kr: 'Noto Sans KR', sans-serif;
+            --font-en: 'DM Sans', sans-serif;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-cn);
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        body.lang-kr { font-family: var(--font-kr); }
+
+        .top-nav {
+            background: linear-gradient(135deg, var(--nav-from) 0%, var(--nav-to) 60%, #243b5a 100%);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.25);
+        }
+        .top-nav::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.6;
+            animation: navGlow 4s ease-in-out infinite;
+        }
+        @keyframes navGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .nav-logo {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 18px;
+            box-shadow: 0 2px 8px rgba(200,149,108,0.3);
+        }
+        .nav-title {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .nav-subtitle {
+            color: rgba(255,255,255,0.45);
+            font-size: 11px;
+            font-weight: 300;
+            font-family: var(--font-en);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* 语言切换按钮 */
+        .lang-switch {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            overflow: hidden;
+            height: 34px;
+            flex-shrink: 0;
+        }
+        .lang-btn {
+            padding: 0 14px;
+            height: 100%;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: var(--font-en);
+            letter-spacing: 0.3px;
+            position: relative;
+        }
+        .lang-btn:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 6px; bottom: 6px;
+            width: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+        .lang-btn:hover {
+            color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.05);
+        }
+        .lang-btn.active {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+        .lang-btn .flag {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .nav-status {
+            display: flex; align-items: center; gap: 8px;
+            color: rgba(255,255,255,0.6); font-size: 12px;
+        }
+        .nav-status .dot {
+            width: 7px; height: 7px;
+            background: var(--success); border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+        }
+        .nav-time {
+            color: rgba(255,255,255,0.5);
+            font-size: 12px; font-family: var(--font-en); font-weight: 500;
+        }
+        .nav-user {
+            display: flex; align-items: center; gap: 10px;
+            color: rgba(255,255,255,0.7); font-size: 13px;
+        }
+        .nav-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 13px; font-weight: 700;
+        }
+
+        .main-content {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 28px 32px 48px;
+        }
+        .breadcrumb {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: var(--muted); margin-bottom: 20px;
+        }
+        .breadcrumb a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+        .breadcrumb a:hover { color: var(--accent); }
+        .breadcrumb .sep { opacity: 0.4; }
+        .breadcrumb .current { color: var(--fg); font-weight: 500; }
+
+        .page-header {
+            margin-bottom: 28px;
+            display: flex; align-items: flex-end; justify-content: space-between;
+        }
+        .page-header h1 {
+            font-size: 26px; font-weight: 900; color: var(--fg); line-height: 1.3;
+        }
+        .page-header h1 span { color: var(--accent); }
+        .page-header p {
+            color: var(--muted); font-size: 13px; margin-top: 4px; font-weight: 300;
+        }
+        .header-badge {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #fff; font-size: 11px; font-weight: 700;
+            padding: 6px 14px; border-radius: 20px; letter-spacing: 0.5px;
+            font-family: var(--font-en); white-space: nowrap;
+        }
+
+        .stats-bar {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 16px; margin-bottom: 28px;
+        }
+        .stat-item {
+            background: var(--card); border-radius: var(--radius-sm);
+            padding: 16px 18px;
+            display: flex; align-items: center; gap: 14px;
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-icon {
+            width: 42px; height: 42px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px; flex-shrink: 0;
+        }
+        .stat-icon.blue { background: #eff6ff; color: #3b82f6; }
+        .stat-icon.amber { background: #fffbeb; color: #f59e0b; }
+        .stat-icon.green { background: #f0fdf4; color: #22c55e; }
+        .stat-icon.rose { background: #fef2f2; color: #ef4444; }
+        .stat-value {
+            font-size: 22px; font-weight: 900; font-family: var(--font-en); line-height: 1.2; color: var(--fg);
+        }
+        .stat-label { font-size: 11px; color: var(--muted); font-weight: 400; }
+
+        .grid-layout {
+            display: grid; grid-template-columns: 420px 1fr;
+            gap: 24px; align-items: start;
+        }
+        .card {
+            background: var(--card); border-radius: var(--radius);
+            border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+            overflow: hidden; transition: box-shadow 0.3s;
+        }
+        .card:hover { box-shadow: var(--shadow-md); }
+        .card-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .card-header-icon {
+            width: 36px; height: 36px; border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; flex-shrink: 0;
+        }
+        .card-header-icon.input-icon {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff;
+        }
+        .card-header-icon.output-icon {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff;
+        }
+        .card-header-text h2 { font-size: 15px; font-weight: 700; color: var(--fg); }
+        .card-header-text p { font-size: 11px; color: var(--muted); margin-top: 1px; }
+        .card-body { padding: 24px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group:last-of-type { margin-bottom: 0; }
+        .form-label {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 500; color: var(--fg); margin-bottom: 8px;
+        }
+        .form-label .required { color: var(--danger); font-size: 14px; }
+        .form-label i { color: var(--muted); font-size: 12px; width: 16px; text-align: center; }
+        .form-input, .form-select {
+            width: 100%; height: 44px; padding: 0 14px;
+            border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            font-size: 14px; color: var(--fg); background: #fafbfc;
+            transition: all 0.2s; outline: none;
+            appearance: none; -webkit-appearance: none;
+        }
+        body.lang-kr .form-input,
+        body.lang-kr .form-select { font-family: var(--font-kr); }
+        body:not(.lang-kr) .form-input,
+        body:not(.lang-kr) .form-select { font-family: var(--font-cn); }
+        .form-input:focus, .form-select:focus {
+            border-color: var(--accent); background: #fff;
+            box-shadow: 0 0 0 3px rgba(200,149,108,0.15);
+        }
+        .form-input::placeholder { color: #b0b8c4; }
+        .select-wrapper { position: relative; }
+        .select-wrapper::after {
+            content: '\f107'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--muted); font-size: 12px; pointer-events: none;
+        }
+        .form-select { padding-right: 36px; cursor: pointer; }
+
+        .score-selector { display: flex; gap: 8px; }
+        .score-btn {
+            flex: 1; height: 44px;
+            border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            background: #fafbfc; font-size: 15px; font-weight: 700;
+            font-family: var(--font-en); color: var(--muted); cursor: pointer;
+            transition: all 0.2s; position: relative;
+        }
+        .score-btn:hover {
+            border-color: var(--accent-light); color: var(--accent-dark); background: #fef8f2;
+        }
+        .score-btn.active {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #fff; box-shadow: 0 2px 8px rgba(200,149,108,0.3);
+        }
+        .score-btn .score-label {
+            position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+            font-size: 9px; font-weight: 400; color: var(--muted); white-space: nowrap;
+        }
+        body.lang-kr .score-btn .score-label { font-family: var(--font-kr); }
+        body:not(.lang-kr) .score-btn .score-label { font-family: var(--font-cn); }
+        .score-btn.active .score-label { color: var(--accent-dark); }
+        .score-hint { margin-top: 22px; font-size: 11px; color: var(--muted); text-align: center; }
+
+        .btn-submit {
+            width: 100%; height: 50px; margin-top: 28px; border: none;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all 0.25s;
+            box-shadow: 0 4px 14px rgba(200,149,108,0.3);
+            position: relative; overflow: hidden;
+        }
+        body.lang-kr .btn-submit { font-family: var(--font-kr); }
+        body:not(.lang-kr) .btn-submit { font-family: var(--font-cn); }
+        .btn-submit::before {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.5s;
+        }
+        .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200,149,108,0.4); }
+        .btn-submit:hover::before { left: 100%; }
+        .btn-submit:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(200,149,108,0.3); }
+        .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .btn-submit .spinner {
+            width: 18px; height: 18px;
+            border: 2.5px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.7s linear infinite; display: none;
+        }
+        .btn-submit.loading .spinner { display: block; }
+        .btn-submit.loading .btn-text { display: none; }
+        .btn-submit.loading .btn-loading-text { display: inline; }
+        .btn-loading-text { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 60px 20px; text-align: center;
+        }
+        .empty-icon {
+            width: 80px; height: 80px; border-radius: 50%; background: #f5f7fa;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: #c8d1dc; margin-bottom: 20px;
+        }
+        .empty-state h3 { font-size: 16px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+        .empty-state p { font-size: 12px; color: #a0aab5; }
+
+        .result-area { display: none; animation: fadeSlideUp 0.5s ease-out; }
+        .result-area.visible { display: block; }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-overview { display: flex; gap: 12px; margin-bottom: 20px; }
+        .overview-chip {
+            flex: 1; padding: 12px 14px; border-radius: var(--radius-sm);
+            text-align: center; border: 1px solid;
+        }
+        .overview-chip .chip-label {
+            font-size: 10px; font-weight: 500; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 4px;
+        }
+        .overview-chip .chip-value {
+            font-size: 16px; font-weight: 900; font-family: var(--font-en);
+        }
+
+        .result-section {
+            margin-bottom: 20px; padding: 20px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border); background: #fafbfc;
+            animation: fadeSlideUp 0.5s ease-out backwards;
+        }
+        .result-section:nth-child(2) { animation-delay: 0.1s; }
+        .result-section:nth-child(3) { animation-delay: 0.2s; }
+        .result-section:nth-child(4) { animation-delay: 0.3s; }
+        .result-section:nth-child(5) { animation-delay: 0.4s; }
+        .result-section:last-child { margin-bottom: 0; }
+        .result-section-title {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px;
+        }
+        .result-section-title i { font-size: 13px; }
+
+        .service-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .service-tag {
+            padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
+        }
+        body.lang-kr .service-tag { font-family: var(--font-kr); }
+        body:not(.lang-kr) .service-tag { font-family: var(--font-cn); }
+        .service-tag.none { background: #f5f7fa; color: var(--muted); border: 1px solid var(--border); }
+        .service-tag.meal { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .service-tag.reroute { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .service-tag.hotel { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .service-tag.vip { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; border: 1px solid #fcd34d; }
+
+        .script-box {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 16px 18px;
+            font-size: 14px; line-height: 1.8; color: var(--fg); position: relative;
+        }
+        .script-box::before {
+            content: '\f10d'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; top: 12px; left: 14px; font-size: 14px;
+            color: var(--accent-light); opacity: 0.5;
+        }
+        .script-box p { padding-left: 24px; }
+
+        .satisfaction-display { display: flex; align-items: center; gap: 28px; }
+        .ring-container { position: relative; width: 140px; height: 140px; flex-shrink: 0; }
+        .ring-container svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .ring-bg { fill: none; stroke: #eef1f5; stroke-width: 10; }
+        .ring-fill {
+            fill: none; stroke-width: 10; stroke-linecap: round;
+            transition: stroke-dashoffset 1.2s ease-out, stroke 0.5s;
+        }
+        .ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .ring-score { font-size: 36px; font-weight: 900; font-family: var(--font-en); line-height: 1; }
+        .ring-unit { font-size: 14px; font-weight: 400; color: var(--muted); font-family: var(--font-en); }
+        .ring-level { font-size: 12px; font-weight: 700; margin-top: 2px; letter-spacing: 1px; }
+        body.lang-kr .ring-level { font-family: var(--font-kr); }
+        body:not(.lang-kr) .ring-level { font-family: var(--font-cn); }
+
+        .satisfaction-details { flex: 1; }
+        .detail-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 0; border-bottom: 1px dashed #eef1f5; font-size: 13px;
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-row .label { color: var(--muted); }
+        .detail-row .value { font-weight: 700; font-family: var(--font-en); }
+        .detail-row .value.positive { color: var(--success); }
+        .detail-row .value.negative { color: var(--danger); }
+        .detail-row .value.neutral { color: var(--muted); }
+
+        .level-high { color: var(--success); }
+        .level-mid { color: var(--warning); }
+        .level-low { color: var(--danger); }
+
+        .ai-explanation {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 16px 18px; display: flex; gap: 12px; align-items: flex-start;
+        }
+        .ai-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 14px; flex-shrink: 0;
+        }
+        .ai-text { font-size: 13px; line-height: 1.8; color: #374151; }
+
+        .linear-bar-wrapper { margin-top: 16px; }
+        .linear-bar-label {
+            display: flex; justify-content: space-between;
+            font-size: 11px; color: var(--muted); margin-bottom: 6px;
+        }
+        .linear-bar { height: 8px; background: #eef1f5; border-radius: 4px; overflow: hidden; }
+        .linear-bar-fill {
+            height: 100%; border-radius: 4px; width: 0%;
+            transition: width 1.2s ease-out, background 0.5s;
+        }
+
+        .footer-bar {
+            max-width: 1360px; margin: 0 auto; padding: 16px 32px;
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 11px; color: #a0aab5; border-top: 1px solid var(--border);
+        }
+
+        .toast-container {
+            position: fixed; top: 80px; right: 32px; z-index: 999;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .toast {
+            padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: var(--shadow-lg); animation: toastIn 0.35s ease-out; min-width: 260px;
+        }
+        body.lang-kr .toast { font-family: var(--font-kr); }
+        body:not(.lang-kr) .toast { font-family: var(--font-cn); }
+        .toast.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .toast.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .toast.leaving { animation: toastOut 0.3s ease-in forwards; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toastOut { to { opacity: 0; transform: translateX(40px); } }
+
+        .bg-pattern {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none; z-index: -1; opacity: 0.3;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(200,149,108,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(59,130,246,0.04) 0%, transparent 50%);
+        }
+
+        @media (max-width: 1024px) {
+            .grid-layout { grid-template-columns: 1fr; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .main-content { padding: 16px; }
+            .top-nav { padding: 0 16px; }
+            .nav-title { font-size: 13px; }
+            .nav-subtitle, .nav-status, .nav-time { display: none; }
+            .stats-bar { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .satisfaction-display { flex-direction: column; align-items: center; text-align: center; }
+            .result-overview { flex-direction: column; }
+            .footer-bar { flex-direction: column; gap: 4px; text-align: center; padding: 16px; }
+            .lang-switch { height: 30px; }
+            .lang-btn { padding: 0 10px; font-size: 11px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <nav class="top-nav" role="navigation" aria-label="主导航">
+        <div class="nav-left">
+            <div class="nav-logo"><i class="fas fa-plane"></i></div>
+            <div>
+                <div class="nav-title" data-i18n="navTitle">AI航空服务优化与客户体验管理平台</div>
+                <div class="nav-subtitle">Service Recovery & CX Intelligence</div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <!-- 语言切换 -->
+            <div class="lang-switch" role="radiogroup" aria-label="语言切换">
+                <button class="lang-btn active" data-lang="zh" role="radio" aria-checked="true" aria-label="中文">
+                    <span class="flag">🇨🇳</span> 中文
+                </button>
+                <button class="lang-btn" data-lang="kr" role="radio" aria-checked="false" aria-label="한국어">
+                    <span class="flag">🇰🇷</span> 한국어
+                </button>
+            </div>
+            <div class="nav-status">
+                <span class="dot"></span>
+                <span data-i18n="navStatus">系统运行中</span>
+            </div>
+            <div class="nav-time" id="navTime"></div>
+            <div class="nav-user">
+                <span data-i18n="navDept">战略开发部</span>
+                <div class="nav-avatar">K</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="breadcrumb" aria-label="面包屑导航">
+            <a href="#" data-i18n="bcHome">首页</a>
+            <span class="sep"><i class="fas fa-chevron-right" style="font-size:9px"></i></span>
+            <a href="#" data-i18n="bcCenter">智能决策中心</a>
+            <span class="sep"><i class="fas fa-chevron-right" style="font-size:9px"></i></span>
+            <span class="current" data-i18n="bcCurrent">延误服务恢复</span>
+        </div>
+
+        <div class="page-header">
+            <div>
+                <h1 data-i18n="pageTitle">延误服务<span>智能决策</span>引擎</h1>
+                <p data-i18n="pageDesc">基于航班延误场景，自动匹配最优服务恢复方案并预测旅客满意度</p>
+            </div>
+            <div class="header-badge">AI POWERED v2.4</div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon blue"><i class="fas fa-plane-departure"></i></div>
+                <div>
+                    <div class="stat-value">70</div>
+                    <div class="stat-label" data-i18n="statFleet">在运机队规模</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon amber"><i class="fas fa-clock"></i></div>
+                <div>
+                    <div class="stat-value" id="statDecisions">0</div>
+                    <div class="stat-label" data-i18n="statDecisions">本次会话决策数</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon green"><i class="fas fa-face-smile"></i></div>
+                <div>
+                    <div class="stat-value" id="statAvgScore">--</div>
+                    <div class="stat-label" data-i18n="statAvg">平均满意度预测</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon rose"><i class="fas fa-triangle-exclamation"></i></div>
+                <div>
+                    <div class="stat-value" id="statHighRisk">0</div>
+                    <div class="stat-label" data-i18n="statRisk">高风险案例数</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-icon input-icon"><i class="fas fa-sliders"></i></div>
+                    <div class="card-header-text">
+                        <h2 data-i18n="inputTitle">场景参数配置</h2>
+                        <p data-i18n="inputDesc">请填写延误航班相关信息</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="decisionForm" onsubmit="return false;">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span data-i18n="labelDelay">延误时间</span>
+                                <span class="required">*</span>
+                            </label>
+                            <input type="number" class="form-input" id="delayHours"
+                                   data-ph-zh="输入延误小时数，如 2.5" data-ph-kr="지연 시간을 입력하세요 (예: 2.5)"
+                                   placeholder="输入延误小时数，如 2.5" min="0" max="24" step="0.5"
+                                   aria-label="延误时间">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user-tag"></i>
+                                <span data-i18n="labelPaxType">乘客类型</span>
+                                <span class="required">*</span>
+                            </label>
+                            <div class="select-wrapper">
+                                <select class="form-select" id="passengerType" aria-label="乘客类型">
+                                    <option value="" data-i18n-opt="optSelectType">请选择乘客类型</option>
+                                    <option value="普通" data-i18n-opt="optNormal">普通乘客</option>
+                                    <option value="商务" data-i18n-opt="optBusiness">商务乘客</option>
+                                    <option value="旅行" data-i18n-opt="optTravel">旅行乘客</option>
+                                    <option value="不详" data-i18n-opt="optUnknown">类型不详</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-ticket"></i>
+                                <span data-i18n="labelCabin">舱位等级</span>
+                                <span class="required">*</span>
+                            </label>
+                            <div class="select-wrapper">
+                                <select class="form-select" id="cabinClass" aria-label="舱位等级">
+                                    <option value="" data-i18n-opt="optSelectCabin">请选择舱位</option>
+                                    <option value="经济舱" data-i18n-opt="optEconomy">经济舱</option>
+                                    <option value="商务舱" data-i18n-opt="optBizCabin">商务舱</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-star-half-stroke"></i>
+                                <span data-i18n="labelScore">服务质量自评</span>
+                                <span class="required">*</span>
+                            </label>
+                            <div class="score-selector" id="scoreSelector" role="radiogroup" aria-label="职员满意度评分">
+                                <button type="button" class="score-btn" data-score="1" role="radio" aria-checked="false">1<span class="score-label" data-i18n="s1">很差</span></button>
+                                <button type="button" class="score-btn" data-score="2" role="radio" aria-checked="false">2<span class="score-label" data-i18n="s2">较差</span></button>
+                                <button type="button" class="score-btn" data-score="3" role="radio" aria-checked="false">3<span class="score-label" data-i18n="s3">一般</span></button>
+                                <button type="button" class="score-btn" data-score="4" role="radio" aria-checked="false">4<span class="score-label" data-i18n="s4">良好</span></button>
+                                <button type="button" class="score-btn" data-score="5" role="radio" aria-checked="false">5<span class="score-label" data-i18n="s5">优秀</span></button>
+                            </div>
+                            <div class="score-hint" data-i18n="scoreHint">职员对自身本次服务表现的满意度评估</div>
+                        </div>
+                        <button type="button" class="btn-submit" id="btnSubmit" aria-label="生成AI决策">
+                            <span class="spinner"></span>
+                            <span class="btn-text"><i class="fas fa-wand-magic-sparkles"></i> <span data-i18n="btnSubmit">生成AI决策</span></span>
+                            <span class="btn-loading-text" data-i18n="btnLoading">AI 分析中...</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-icon output-icon"><i class="fas fa-brain"></i></div>
+                    <div class="card-header-text">
+                        <h2 data-i18n="outputTitle">智能决策结果</h2>
+                        <p data-i18n="outputDesc">服务恢复方案与满意度预测</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon"><i class="fas fa-paper-plane"></i></div>
+                        <h3 data-i18n="emptyTitle">等待决策请求</h3>
+                        <p data-i18n="emptyDesc">请在左侧填写延误场景参数，点击"生成AI决策"查看分析结果</p>
+                    </div>
+                    <div class="result-area" id="resultArea">
+                        <div class="result-overview" id="resultOverview"></div>
+                        <div class="result-section">
+                            <div class="result-section-title">
+                                <i class="fas fa-concierge-bell" style="color: var(--accent)"></i>
+                                <span data-i18n="secService">推荐服务方案</span>
+                            </div>
+                            <div class="service-tags" id="serviceTags"></div>
+                        </div>
+                        <div class="result-section">
+                            <div class="result-section-title">
+                                <i class="fas fa-comment-dots" style="color: #3b82f6"></i>
+                                <span data-i18n="secScript">标准化解决话术</span>
+                            </div>
+                            <div class="script-box" id="scriptBox"><p></p></div>
+                        </div>
+                        <div class="result-section">
+                            <div class="result-section-title">
+                                <i class="fas fa-chart-line" style="color: var(--success)"></i>
+                                <span data-i18n="secSat">满意度预测分析</span>
+                            </div>
+                            <div class="satisfaction-display">
+                                <div class="ring-container">
+                                    <svg viewBox="0 0 160 160">
+                                        <circle class="ring-bg" cx="80" cy="80" r="65"></circle>
+                                        <circle class="ring-fill" id="ringFill" cx="80" cy="80" r="65"
+                                                stroke-dasharray="408.41" stroke-dashoffset="408.41"></circle>
+                                    </svg>
+                                    <div class="ring-center">
+                                        <div class="ring-score" id="ringScore">0</div>
+                                        <div class="ring-unit">/ 100</div>
+                                        <div class="ring-level" id="ringLevel">--</div>
+                                    </div>
+                                </div>
+                                <div class="satisfaction-details" id="satDetails"></div>
+                            </div>
+                            <div class="linear-bar-wrapper">
+                                <div class="linear-bar-label">
+                                    <span data-i18n="barRange">满意度区间</span>
+                                    <span id="barLabel">0%</span>
+                                </div>
+                                <div class="linear-bar">
+                                    <div class="linear-bar-fill" id="linearBarFill"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="result-section">
+                            <div class="result-section-title">
+                                <i class="fas fa-robot" style="color: #8b5cf6"></i>
+                                <span data-i18n="secAI">AI 决策解释</span>
+                            </div>
+                            <div class="ai-explanation" id="aiExplanation">
+                                <div class="ai-icon"><i class="fas fa-microchip"></i></div>
+                                <div class="ai-text"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer-bar">
+        <span data-i18n="footerLeft">AI航空服务优化与客户体验管理平台 &copy; 2025 战略开发部</span>
+        <span data-i18n="footerRight">机队规模 70架 &middot; 数据仅用于模拟演示</span>
+    </footer>
+
+    <script>
+    /* ====================================================
+       国际化（i18n）数据 — 中文 / 韩文
+       ==================================================== */
+    var i18n = {
+        zh: {
+            navTitle: 'AI航空服务优化与客户体验管理平台',
+            navStatus: '系统运行中',
+            navDept: '战略开发部',
+            bcHome: '首页',
+            bcCenter: '智能决策中心',
+            bcCurrent: '延误服务恢复',
+            pageTitle: '延误服务<span>智能决策</span>引擎',
+            pageDesc: '基于航班延误场景，自动匹配最优服务恢复方案并预测旅客满意度',
+            statFleet: '在运机队规模',
+            statDecisions: '本次会话决策数',
+            statAvg: '平均满意度预测',
+            statRisk: '高风险案例数',
+            inputTitle: '场景参数配置',
+            inputDesc: '请填写延误航班相关信息',
+            outputTitle: '智能决策结果',
+            outputDesc: '服务恢复方案与满意度预测',
+            labelDelay: '延误时间',
+            labelPaxType: '乘客类型',
+            labelCabin: '舱位等级',
+            labelScore: '服务质量自评',
+            optSelectType: '请选择乘客类型',
+            optNormal: '普通乘客',
+            optBusiness: '商务乘客',
+            optTravel: '旅行乘客',
+            optUnknown: '类型不详',
+            optSelectCabin: '请选择舱位',
+            optEconomy: '经济舱',
+            optBizCabin: '商务舱',
+            s1: '很差', s2: '较差', s3: '一般', s4: '良好', s5: '优秀',
+            scoreHint: '职员对自身本次服务表现的满意度评估',
+            btnSubmit: '生成AI决策',
+            btnLoading: 'AI 分析中...',
+            emptyTitle: '等待决策请求',
+            emptyDesc: '请在左侧填写延误场景参数，点击"生成AI决策"查看分析结果',
+            secService: '推荐服务方案',
+            secScript: '标准化解决话术',
+            secSat: '满意度预测分析',
+            secAI: 'AI 决策解释',
+            barRange: '满意度区间',
+            footerLeft: 'AI航空服务优化与客户体验管理平台 &copy; 2025 战略开发部',
+            footerRight: '机队规模 70架 &middot; 数据仅用于模拟演示',
+            /* 验证提示 */
+            errDelay: '请输入有效的延误时间',
+            errDelayMax: '延误时间不能超过24小时',
+            errPaxType: '请选择乘客类型',
+            errCabin: '请选择舱位等级',
+            errScore: '请选择服务质量自评分数',
+            toastSuccess: '决策分析完成',
+            /* 概览芯片 */
+            chipSatLevel: '满意度等级',
+            chipDelay: '延误时长',
+            chipPaxCabin: '乘客/舱位',
+            /* 服务标签 */
+            svcNone: '无需补偿',
+            svcMeal: '餐券/代金券',
+            svcReroute: '改签',
+            svcPriority: '优先改签',
+            svcHotel: '酒店住宿',
+            svcVIP: 'VIP服务',
+            /* 满意度明细 */
+            detBase: '初始分',
+            detDelay: '延误扣分',
+            detMeal: '餐券加分',
+            detHotel: '酒店加分',
+            detVIP: 'VIP加分',
+            detStaff: '服务自评加分',
+            detFinal: '最终得分',
+            satSuffix: '满意度',
+            /* 话术模板 */
+            scriptPrefix: '尊敬的',
+            scriptSuffix: '旅客',
+            scriptNormalSuffix: '旅客',
+            scriptBizSuffix: '旅客',
+            scriptTravelSuffix: '旅客',
+            scriptUnknownSuffix: '旅客',
+            scriptLt1a: '，非常抱歉通知您，您的航班预计延误',
+            scriptLt1b: '。我们正在全力协调，争取尽快恢复起飞。在此期间，如有任何需求，请随时联系现场工作人员，我们将竭诚为您服务。',
+            script13a: '，十分抱歉，您的航班预计延误',
+            script13b: '。为表达我们的歉意，已为您准备了餐券/代金券，您可前往航站楼指定餐厅使用。感谢您的耐心等待与理解。',
+            script35BizA: '，非常抱歉，您的航班预计延误',
+            script35BizB: '。鉴于您的出行需求，我们已为您优先安排改签至最近的可用航班，同时开放VIP休息室供您舒适等候。如有进一步需求，VIP专员将全程协助您。',
+            script35NormA: '，非常抱歉，您的航班预计延误',
+            script35NormB: '。我们已为您查询到最近的可用航班并安排改签，请前往服务柜台办理相关手续。感谢您的理解与配合。',
+            script5BizA: '，对此深表歉意，您的航班预计延误',
+            script5BizB: '。我们已为您安排附近合作酒店的住宿，并同步开放VIP休息室及专属接送服务。VIP专员将与您保持联系，确保后续行程顺利。',
+            script5NormA: '，对此深表歉意，您的航班预计延误',
+            script5NormB: '。我们已为您安排附近合作酒店的住宿，具体信息请前往服务柜台领取。后续航班信息我们将第一时间通知您，感谢您的理解。',
+            unitMin: '分钟',
+            unitHour: '小时',
+            delayAbout: '约',
+            /* AI解释模板 */
+            aiPrefix: '由于航班延误',
+            aiHour: '小时',
+            aiPaxPrefix: '，且乘客类型为"',
+            aiPaxSuffix: '"',
+            aiCabinParen: '（',
+            aiCabinParenEnd: '）',
+            aiRecommend: '，系统推荐【',
+            aiRecommendEnd: '】方案',
+            aiHigh: '。综合评估旅客满意度预期为"',
+            aiMid: '。综合评估旅客满意度预期为"',
+            aiLow: '。综合评估旅客满意度预期为"',
+            aiHighEnd: '"，当前服务方案可有效缓解旅客不满情绪，建议按标准流程执行。',
+            aiMidEnd: '"，建议服务人员额外关注旅客情绪变化，必要时提供个性化安抚与主动沟通。',
+            aiLowEnd: '"，存在较高投诉风险，建议升级处理级别并安排专人全程跟进，必要时申请特殊补偿授权。'
+        },
+        kr: {
+            navTitle: 'AI 항공 서비스 최적화 및 고객 경험 관리 플랫폼',
+            navStatus: '시스템 운영 중',
+            navDept: '전략개발부',
+            bcHome: '홈',
+            bcCenter: '지능형 의사결정 센터',
+            bcCurrent: '지연 서비스 복구',
+            pageTitle: '지연 서비스 <span>지능형 의사결정</span> 엔진',
+            pageDesc: '항공편 지연 시나리오를 기반으로 최적의 서비스 복구 방안을 자동 매칭하고 승객 만족도를 예측합니다',
+            statFleet: '운항 중인 항공기 수',
+            statDecisions: '세션 의사결정 건수',
+            statAvg: '평균 만족도 예측',
+            statRisk: '고위험 사례 수',
+            inputTitle: '시나리오 파라미터 설정',
+            inputDesc: '지연 항공편 관련 정보를 입력해 주세요',
+            outputTitle: '지능형 의사결정 결과',
+            outputDesc: '서비스 복구 방안 및 만족도 예측',
+            labelDelay: '지연 시간',
+            labelPaxType: '승객 유형',
+            labelCabin: '클래스 등급',
+            labelScore: '서비스 질 자체평가',
+            optSelectType: '승객 유형을 선택하세요',
+            optNormal: '일반 승객',
+            optBusiness: '비즈니스 승객',
+            optTravel: '여행 승객',
+            optUnknown: '유형 불명',
+            optSelectCabin: '클래스를 선택하세요',
+            optEconomy: '이코노미석',
+            optBizCabin: '비즈니스석',
+            s1: '매우 나쁨', s2: '나쁨', s3: '보통', s4: '양호', s5: '우수',
+            scoreHint: '직원이 본인의 이번 서비스 수행에 대한 만족도 평가',
+            btnSubmit: 'AI 의사결정 생성',
+            btnLoading: 'AI 분석 중...',
+            emptyTitle: '의사결정 요청 대기 중',
+            emptyDesc: '왼쪽에 지연 시나리오 파라미터를 입력하고 "AI 의사결정 생성"을 클릭하세요',
+            secService: '추천 서비스 방안',
+            secScript: '표준화 해결 스크립트',
+            secSat: '만족도 예측 분석',
+            secAI: 'AI 의사결정 설명',
+            barRange: '만족도 구간',
+            footerLeft: 'AI 항공 서비스 최적화 및 고객 경험 관리 플랫폼 &copy; 2025 전략개발부',
+            footerRight: '항공기 보유 대수 70대 &middot; 시뮬레이션 목적의 데이터입니다',
+            errDelay: '유효한 지연 시간을 입력하세요',
+            errDelayMax: '지연 시간은 24시간을 초과할 수 없습니다',
+            errPaxType: '승객 유형을 선택하세요',
+            errCabin: '클래스 등급을 선택하세요',
+            errScore: '서비스 질 자체평가 점수를 선택하세요',
+            toastSuccess: '의사결정 분석 완료',
+            chipSatLevel: '만족도 등급',
+            chipDelay: '지연 시간',
+            chipPaxCabin: '승객/클래스',
+            svcNone: '보상 불필요',
+            svcMeal: '식사권/바우처',
+            svcReroute: '재발권',
+            svcPriority: '우선 재발권',
+            svcHotel: '숙소 제공',
+            svcVIP: 'VIP 서비스',
+            detBase: '기본 점수',
+            detDelay: '지연 감점',
+            detMeal: '식사권 가산',
+            detHotel: '숙소 가산',
+            detVIP: 'VIP 가산',
+            detStaff: '서비스 자체평가 가산',
+            detFinal: '최종 점수',
+            satSuffix: '만족도',
+            scriptPrefix: '존경하는 ',
+            scriptSuffix: ' 고객님,',
+            scriptNormalSuffix: '일반',
+            scriptBizSuffix: '비즈니스',
+            scriptTravelSuffix: '여행',
+            scriptUnknownSuffix: '고객',
+            scriptLt1a: ' 대단히 죄송합니다. 예정된 항공편이 ',
+            scriptLt1b: ' 지연될 예정입니다. 최대한 빨리 정상 운항을 재개할 수 있도록 노력하고 있습니다. 필요하신 사항이 있으시면 언제든 현장 직원에게 연락해 주시기 바랍니다.',
+            script13a: ' 대단히 죄송합니다. 예정된 항공편이 ',
+            script13b: ' 지연될 예정입니다. 사과의 표시로 식사권/바우처를 준비해 드렸으며, 터미널 내 지정 식당에서 이용하실 수 있습니다. 기다려 주셔서 감사합니다.',
+            script35BizA: ' 대단히 죄송합니다. 예정된 항공편이 ',
+            script35BizB: ' 지연될 예정입니다. 고객님의 여행 일정을 고려하여 가장 빠른 가능한 항공편으로 우선 재발권해 드렸으며, VIP 라운지도 이용하실 수 있습니다. 추가 필요 사항이 있으시면 VIP 전담 담당자가 도와드리겠습니다.',
+            script35NormA: ' 대단히 죄송합니다. 예정된 항공편이 ',
+            script35NormB: ' 지연될 예정입니다. 가장 빠른 가능한 항공편을 조회하여 재발권해 드렸습니다. 서비스 카운터에서 관련 절차를 진행해 주시기 바랍니다. 이해와 협조에 감사드립니다.',
+            script5BizA: ' 깊은 사과의 말씀을 드립니다. 예정된 항공편이 ',
+            script5BizB: ' 지연될 예정입니다. 근처 제휴 호텔 숙소를 예약해 드렸으며, VIP 라운지 및 전용 셔틀 서비스도 이용하실 수 있습니다. VIP 전담 담당자가 계속 연락드리며 이후 일정이 순조롭게 진행되도록 지원하겠습니다.',
+            script5NormA: ' 깊은 사과의 말씀을 드립니다. 예정된 항공편이 ',
+            script5NormB: ' 지연될 예정입니다. 근처 제휴 호텔 숙소를 예약해 드렸습니다. 상세 정보는 서비스 카운터에서 수령해 주시기 바랍니다. 이후 항공편 정보는 즉시 안내해 드리겠습니다.',
+            unitMin: '분',
+            unitHour: '시간',
+            delayAbout: '약 ',
+            aiPrefix: '항공편이 ',
+            aiHour: '시간 지연되어',
+            aiPaxPrefix: '，승객 유형이 "',
+            aiPaxSuffix: '"이며',
+            aiCabinParen: '（',
+            aiCabinParenEnd: '）',
+            aiRecommend: '，시스템이 【',
+            aiRecommendEnd: '】 방안을 추천합니다',
+            aiHigh: '。종합 평가 결과 승객 만족도 예상은 "',
+            aiMid: '。종합 평가 결과 승객 만족도 예상은 "',
+            aiLow: '。종합 평가 결과 승객 만족도 예상은 "',
+            aiHighEnd: '"으로, 현재 서비스 방안으로 승객의 불만을 효과적으로 완화할 수 있으며 표준 절차에 따라 실행할 것을 권장합니다.',
+            aiMidEnd: '"입니다. 서비스 담당자가 승객의 감정 변화에 추가로 주의를 기울이고, 필요시 개인화된 위로와 적극적인 소통을 제공할 것을 권장합니다.',
+            aiLowEnd: '"으로, 민원 위험이 높으므로 처리 등급을 상향 조정하고 전담 인력을 배치하여 전 과정을 관리하며, 필요시 특별 보상 승인을 신청할 것을 권장합니다.'
+        }
+    };
+
+    /* ====================================================
+       全局状态
+       ==================================================== */
+    var currentLang = 'zh';
+    var selectedScore = 0;
+    var decisionCount = 0;
+    var totalScore = 0;
+    var highRiskCount = 0;
+    var lastResult = null;         // 缓存上次结果，用于语言切换时重新渲染
+    var lastInputs = null;         // 缓存上次输入参数
+    var CIRCUMFERENCE = 2 * Math.PI * 65;
+
+    /* ====================================================
+       初始化
+       ==================================================== */
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNavTime();
+        setInterval(updateNavTime, 1000);
+        initScoreSelector();
+        initSubmitButton();
+        initLangSwitch();
+    });
+
+    /* ====================================================
+       导航栏时间
+       ==================================================== */
+    function updateNavTime() {
+        var now = new Date();
+        var str = now.getFullYear() + '.' +
+                  String(now.getMonth() + 1).padStart(2, '0') + '.' +
+                  String(now.getDate()).padStart(2, '0') + ' ' +
+                  String(now.getHours()).padStart(2, '0') + ':' +
+                  String(now.getMinutes()).padStart(2, '0') + ':' +
+                  String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('navTime').textContent = str;
+    }
+
+    /* ====================================================
+       语言切换
+       ==================================================== */
+    function initLangSwitch() {
+        var btns = document.querySelectorAll('.lang-btn');
+        btns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var lang = btn.dataset.lang;
+                if (lang === currentLang) return;
+                currentLang = lang;
+
+                /* 更新按钮状态 */
+                btns.forEach(function(b) {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-checked', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-checked', 'true');
+
+                /* 切换 body 字体类 */
+                document.body.classList.toggle('lang-kr', lang === 'kr');
+
+                /* 更新 html lang 属性 */
+                document.documentElement.lang = lang === 'kr' ? 'ko' : 'zh-CN';
+
+                /* 更新页面标题 */
+                document.title = i18n[lang].navTitle;
+
+                /* 更新所有 data-i18n 元素 */
+                document.querySelectorAll('[data-i18n]').forEach(function(el) {
+                    var key = el.dataset.i18n;
+                    if (i18n[lang][key] !== undefined) {
+                        el.innerHTML = i18n[lang][key];
+                    }
+                });
+
+                /* 更新 select option 文本 */
+                document.querySelectorAll('[data-i18n-opt]').forEach(function(el) {
+                    var key = el.dataset['i18nOpt'];
+                    if (i18n[lang][key] !== undefined) {
+                        el.textContent = i18n[lang][key];
+                    }
+                });
+
+                /* 更新 placeholder */
+                var delayInput = document.getElementById('delayHours');
+                if (lang === 'kr') {
+                    delayInput.placeholder = delayInput.dataset.phKr;
+                } else {
+                    delayInput.placeholder = delayInput.dataset.phZh;
+                }
+
+                /* 如果有已生成的结果，重新渲染 */
+                if (lastResult && lastInputs) {
+                    renderResult(lastResult, lastInputs.delayHours, lastInputs.passengerType, lastInputs.cabinClass, true);
+                }
+            });
+        });
+    }
+
+    /* ====================================================
+       职员满意度评分选择器
+       ==================================================== */
+    function initScoreSelector() {
+        var btns = document.querySelectorAll('#scoreSelector .score-btn');
+        btns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                btns.forEach(function(b) {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-checked', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-checked', 'true');
+                selectedScore = parseInt(btn.dataset.score, 10);
+            });
+        });
+    }
+
+    /* ====================================================
+       提交按钮
+       ==================================================== */
+    function initSubmitButton() {
+        document.getElementById('btnSubmit').addEventListener('click', function() {
+            if (validateInputs()) {
+                runDecision();
+            }
+        });
+    }
+
+    /* ====================================================
+       输入验证
+       ==================================================== */
+    function validateInputs() {
+        var t = i18n[currentLang];
+        var delay = document.getElementById('delayHours').value;
+        var pType = document.getElementById('passengerType').value;
+        var cabin = document.getElementById('cabinClass').value;
+
+        if (!delay || parseFloat(delay) < 0) {
+            showToast(t.errDelay, 'error');
+            document.getElementById('delayHours').focus();
+            return false;
+        }
+        if (parseFloat(delay) > 24) {
+            showToast(t.errDelayMax, 'error');
+            document.getElementById('delayHours').focus();
+            return false;
+        }
+        if (!pType) {
+            showToast(t.errPaxType, 'error');
+            document.getElementById('passengerType').focus();
+            return false;
+        }
+        if (!cabin) {
+            showToast(t.errCabin, 'error');
+            document.getElementById('cabinClass').focus();
+            return false;
+        }
+        if (selectedScore === 0) {
+            showToast(t.errScore, 'error');
+            return false;
+        }
+        return true;
+    }
+
+    /* ====================================================
+       核心决策逻辑
+       ==================================================== */
+    function runDecision() {
+        var btn = document.getElementById('btnSubmit');
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        setTimeout(function() {
+            var delayHours = parseFloat(document.getElementById('delayHours').value);
+            var passengerType = document.getElementById('passengerType').value;
+            var cabinClass = document.getElementById('cabinClass').value;
+
+            var result = calculateDecision(delayHours, passengerType, cabinClass, selectedScore);
+
+            /* 缓存输入和结果 */
+            lastInputs = { delayHours: delayHours, passengerType: passengerType, cabinClass: cabinClass };
+            lastResult = result;
+
+            renderResult(result, delayHours, passengerType, cabinClass, false);
+
+            decisionCount++;
+            totalScore += result.score;
+            if (result.level === '低' || result.level === '낮음') highRiskCount++;
+            updateStats();
+
+            btn.classList.remove('loading');
+            btn.disabled = false;
+
+            showToast(i18n[currentLang].toastSuccess, 'success');
+        }, 1200);
+    }
+
+    /* ====================================================
+       计算决策
+       ==================================================== */
+    function calculateDecision(delayHours, passengerType, cabinClass, staffScore) {
+        var isBusiness = (passengerType === '商务');
+        var serviceKeys = [];
+
+        if (delayHours < 1) {
+            serviceKeys = ['none'];
+        } else if (delayHours <= 3) {
+            serviceKeys = ['meal'];
+        } else if (delayHours <= 5) {
+            if (isBusiness) {
+                serviceKeys = ['priority', 'vip'];
+            } else {
+                serviceKeys = ['reroute'];
+            }
+        } else {
+            if (isBusiness) {
+                serviceKeys = ['hotel', 'vip'];
+            } else {
+                serviceKeys = ['hotel'];
+            }
+        }
+
+        /* 满意度计算 */
+        var score = 100;
+        score -= Math.round(delayHours * 10);
+        var mealBonus = 0, hotelBonus = 0, vipBonus = 0;
+        serviceKeys.forEach(function(k) {
+            if (k === 'meal') mealBonus = 5;
+            if (k === 'hotel') hotelBonus = 15;
+            if (k === 'vip') vipBonus = 20;
+        });
+        score += mealBonus + hotelBonus + vipBonus;
+
+        var staffMap = { 1: -20, 2: -10, 3: 0, 4: 10, 5: 20 };
+        var staffBonus = staffMap[staffScore];
+        score += staffBonus;
+        score = Math.max(0, Math.min(100, score));
+
+        var level = score >= 70 ? '高' : (score >= 40 ? '中' : '低');
+
+        return {
+            serviceKeys: serviceKeys,
+            score: score,
+            level: level,
+            details: {
+                delayPenalty: -Math.round(delayHours * 10),
+                mealBonus: mealBonus,
+                hotelBonus: hotelBonus,
+                vipBonus: vipBonus,
+                staffBonus: staffBonus
+            }
+        };
+    }
+
+    /* ====================================================
+       渲染结果（支持语言切换时静默重渲染）
+       ==================================================== */
+    function renderResult(result, delayHours, passengerType, cabinClass, silent) {
+        var t = i18n[currentLang];
+
+        document.getElementById('emptyState').style.display = 'none';
+        var area = document.getElementById('resultArea');
+        if (!silent) {
+            area.classList.remove('visible');
+            void area.offsetWidth;
+        }
+        area.classList.add('visible');
+
+        /* 满意度等级文本 */
+        var levelText = result.level === '高' ? '高' : (result.level === '中' ? '中' : '低');
+        var levelColor = result.level === '高' ? 'var(--success)' : (result.level === '中' ? 'var(--warning)' : 'var(--danger)');
+        var levelBg = result.level === '高' ? 'var(--success-bg)' : (result.level === '中' ? 'var(--warning-bg)' : 'var(--danger-bg)');
+        var levelCls = result.level === '高' ? 'level-high' : (result.level === '中' ? 'level-mid' : 'level-low');
+
+        /* 舱位翻译 */
+        var cabinText = cabinClass;
+        if (currentLang === 'kr') {
+            cabinText = cabinClass === '经济舱' ? '이코노미석' : '비즈니스석';
+        }
+
+        /* 乘客类型翻译 */
+        var paxTypeText = passengerType;
+        if (currentLang === 'kr') {
+            var paxMap = { '普通': '일반', '商务': '비즈니스', '旅行': '여행', '不详': '불명' };
+            paxTypeText = paxMap[passengerType] || passengerType;
+        }
+
+        /* 概览条 */
+        document.getElementById('resultOverview').innerHTML =
+            '<div class="overview-chip" style="border-color:' + levelColor + '; background:' + levelBg + '">' +
+                '<div class="chip-label" style="color:' + levelColor + '">' + t.chipSatLevel + '</div>' +
+                '<div class="chip-value" style="color:' + levelColor + '">' + levelText + '</div>' +
+            '</div>' +
+            '<div class="overview-chip" style="border-color: var(--border); background: #f8fafc;">' +
+                '<div class="chip-label" style="color: var(--muted);">' + t.chipDelay + '</div>' +
+                '<div class="chip-value" style="color: var(--fg);">' + delayHours + 'h</div>' +
+            '</div>' +
+            '<div class="overview-chip" style="border-color: var(--border); background: #f8fafc;">' +
+                '<div class="chip-label" style="color: var(--muted);">' + t.chipPaxCabin + '</div>' +
+                '<div class="chip-value" style="color: var(--fg); font-size:13px;">' + paxTypeText + ' / ' + cabinText + '</div>' +
+            '</div>';
+
+        /* 服务标签 */
+        var svcLabelMap = {
+            none: { zh: t.svcNone, kr: t.svcNone, cls: 'none', icon: 'fa-check' },
+            meal: { zh: t.svcMeal, kr: t.svcMeal, cls: 'meal', icon: 'fa-utensils' },
+            reroute: { zh: t.svcReroute, kr: t.svcReroute, cls: 'reroute', icon: 'fa-right-left' },
+            priority: { zh: t.svcPriority, kr: t.svcPriority, cls: 'reroute', icon: 'fa-right-left' },
+            hotel: { zh: t.svcHotel, kr: t.svcHotel, cls: 'hotel', icon: 'fa-bed' },
+            vip: { zh: t.svcVIP, kr: t.svcVIP, cls: 'vip', icon: 'fa-crown' }
+        };
+        var tagsHtml = '';
+        result.serviceKeys.forEach(function(k) {
+            var s = svcLabelMap[k];
+            tagsHtml += '<div class="service-tag ' + s.cls + '"><i class="fas ' + s.icon + '"></i>' + s[currentLang] + '</div>';
+        });
+        document.getElementById('serviceTags').innerHTML = tagsHtml;
+
+        /* 话术 */
+        var script = generateScript(delayHours, passengerType, t);
+        document.getElementById('scriptBox').querySelector('p').textContent = script;
+
+        /* 圆环 */
+        var offset = CIRCUMFERENCE * (1 - result.score / 100);
+        var ringFill = document.getElementById('ringFill');
+        ringFill.style.stroke = levelColor;
+        if (silent) {
+            ringFill.style.strokeDashoffset = offset;
+        } else {
+            ringFill.style.strokeDashoffset = CIRCUMFERENCE;
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    ringFill.style.strokeDashoffset = offset;
+                });
+            });
+        }
+
+        var ringScoreEl = document.getElementById('ringScore');
+        ringScoreEl.style.color = levelColor;
+        if (silent) {
+            ringScoreEl.textContent = result.score;
+        } else {
+            animateNumber(ringScoreEl, 0, result.score, 1000);
+        }
+
+        var ringLevelEl = document.getElementById('ringLevel');
+        ringLevelEl.textContent = levelText + t.satSuffix;
+        ringLevelEl.className = 'ring-level ' + levelCls;
+
+        /* 满意度明细 */
+        var d = result.details;
+        var detailHtml =
+            buildDetailRow(t.detBase, '100', 'neutral') +
+            buildDetailRow(t.detDelay + '（' + delayHours + 'h × 10）', d.delayPenalty, 'negative') +
+            buildDetailRow(t.detMeal, fmtBonus(d.mealBonus), d.mealBonus > 0 ? 'positive' : 'neutral') +
+            buildDetailRow(t.detHotel, fmtBonus(d.hotelBonus), d.hotelBonus > 0 ? 'positive' : 'neutral') +
+            buildDetailRow(t.detVIP, fmtBonus(d.vipBonus), d.vipBonus > 0 ? 'positive' : 'neutral') +
+            buildDetailRow(t.detStaff + '（' + selectedScore + '）', fmtBonus(d.staffBonus), d.staffBonus > 0 ? 'positive' : (d.staffBonus < 0 ? 'negative' : 'neutral')) +
+            buildDetailRow(t.detFinal, result.score, result.score >= 70 ? 'positive' : (result.score >= 40 ? 'neutral' : 'negative'));
+        document.getElementById('satDetails').innerHTML = detailHtml;
+
+        /* 线性进度条 */
+        var barFill = document.getElementById('linearBarFill');
+        barFill.style.background = 'linear-gradient(90deg, ' + levelColor + ', ' + levelColor + 'aa)';
+        if (silent) {
+            barFill.style.width = result.score + '%';
+        } else {
+            barFill.style.width = '0%';
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    barFill.style.width = result.score + '%';
+                });
+            });
+        }
+        var barLabel = document.getElementById('barLabel');
+        barLabel.textContent = result.score + '%';
+        barLabel.style.color = levelColor;
+
+        /* AI解释 */
+        var explanation = generateExplanation(delayHours, passengerType, cabinText, result.serviceKeys, result.score, result.level, t);
+        document.getElementById('aiExplanation').querySelector('.ai-text').textContent = explanation;
+    }
+
+    /* ====================================================
+       话术生成（按当前语言）
+       ==================================================== */
+    function generateScript(delayHours, passengerType, t) {
+        var suffixKey = 'scriptNormalSuffix';
+        if (passengerType === '商务') suffixKey = 'scriptBizSuffix';
+        else if (passengerType === '旅行') suffixKey = 'scriptTravelSuffix';
+        else if (passengerType === '不详') suffixKey = 'scriptUnknownSuffix';
+
+        var delayText;
+        if (delayHours < 1) {
+            delayText = t.delayAbout + Math.round(delayHours * 60) + t.unitMin;
+        } else {
+            delayText = delayHours + t.unitHour;
+        }
+
+        if (delayHours < 1) {
+            return t.scriptPrefix + t[suffixKey] + t.scriptLt1a + delayText + t.scriptLt1b;
+        }
+        if (delayHours <= 3) {
+            return t.scriptPrefix + t[suffixKey] + t.script13a + delayText + t.script13b;
+        }
+        if (delayHours <= 5) {
+            if (passengerType === '商务') {
+                return t.scriptPrefix + t[suffixKey] + t.script35BizA + delayText + t.script35BizB;
+            }
+            return t.scriptPrefix + t[suffixKey] + t.script35NormA + delayText + t.script35NormB;
+        }
+        /* > 5h */
+        if (passengerType === '商务') {
+            return t.scriptPrefix + t[suffixKey] + t.script5BizA + delayText + t.script5BizB;
+        }
+        return t.scriptPrefix + t[suffixKey] + t.script5NormA + delayText + t.script5NormB;
+    }
+
+    /* ====================================================
+       AI解释生成（按当前语言）
+       ==================================================== */
+    function generateExplanation(delayHours, passengerType, cabinText, serviceKeys, score, level, t) {
+        var svcLabelMap = {
+            none: t.svcNone, meal: t.svcMeal, reroute: t.svcReroute,
+            priority: t.svcPriority, hotel: t.svcHotel, vip: t.svcVIP
+        };
+        var svcNames = serviceKeys.map(function(k) { return svcLabelMap[k]; }).join('、');
+
+        var levelText = level === '高' ? '高' : (level === '中' ? '中' : '低');
+
+        var text = t.aiPrefix + delayHours + t.aiHour;
+        if (passengerType !== '不详') {
+            var paxText = passengerType;
+            if (currentLang === 'kr') {
+                var paxMap = { '普通': '일반', '商务': '비즈니스', '旅行': '여행' };
+                paxText = paxMap[passengerType] || passengerType;
+            }
+            text += t.aiPaxPrefix + paxText + t.aiPaxSuffix;
+        }
+        text += t.aiCabinParen + cabinText + t.aiCabinParenEnd;
+        text += t.aiRecommend + svcNames + t.aiRecommendEnd;
+
+        if (level === '高') {
+            text += t.aiHigh + levelText + '（' + score + '）' + t.aiHighEnd;
+        } else if (level === '中') {
+            text += t.aiMid + levelText + '（' + score + '）' + t.aiMidEnd;
+        } else {
+            text += t.aiLow + levelText + '（' + score + '）' + t.aiLowEnd;
+        }
+        return text;
+    }
+
+    /* ====================================================
+       工具函数
+       ==================================================== */
+    function buildDetailRow(label, value, cls) {
+        return '<div class="detail-row"><span class="label">' + label + '</span><span class="value ' + cls + '">' + value + '</span></div>';
+    }
+    function fmtBonus(v) {
+        return v === 0 ? '0' : ((v > 0 ? '+' : '') + v);
+    }
+    function animateNumber(el, from, to, duration) {
+        var start = performance.now();
+        function tick(now) {
+            var elapsed = now - start;
+            var progress = Math.min(elapsed / duration, 1);
+            var eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+            el.textContent = Math.round(from + (to - from) * eased);
+            if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    }
+    function updateStats() {
+        document.getElementById('statDecisions').textContent = decisionCount;
+        document.getElementById('statAvgScore').textContent = decisionCount > 0 ? Math.round(totalScore / decisionCount) : '--';
+        document.getElementById('statHighRisk').textContent = highRiskCount;
+    }
+    function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        var icon = type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
+        toast.innerHTML = '<i class="fas ' + icon + '"></i><span>' + message + '</span>';
+        container.appendChild(toast);
+        setTimeout(function() {
+            toast.classList.add('leaving');
+            setTimeout(function() {
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 300);
+        }, 2500);
+    }
+    </script>
+</body>
+</html>
